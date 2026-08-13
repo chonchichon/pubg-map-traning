@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pubg map training, code by wayto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="trainer-shell">
+      <section class="topbar" aria-labelledby="site-title">
+        <div>
+          <p class="eyebrow">100m grid distance drill</p>
+          <h1 id="site-title">Pubg map training</h1>
+          <p class="credit">code by wayto</p>
+        </div>
+        <div class="stats" aria-label="Training stats">
+          <div>
+            <span id="roundCount">0</span>
+            <small>round</small>
+          </div>
+          <div>
+            <span id="streakCount">0</span>
+            <small>streak</small>
+          </div>
+          <div>
+            <span id="avgError">--</span>
+            <small>avg error</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="play-area">
+        <div class="map-panel">
+          <div class="map-frame" aria-label="PUBG practice map with 100 meter grid">
+            <div class="map-grid" id="mapGrid">
+              <div class="terrain terrain-one"></div>
+              <div class="terrain terrain-two"></div>
+              <div class="terrain terrain-three"></div>
+              <div class="road road-main"></div>
+              <div class="road road-side"></div>
+              <div class="river"></div>
+              <div class="distance-line" id="distanceLine"></div>
+              <div class="pulse-ring" id="pulseA"></div>
+              <div class="pulse-ring pulse-b" id="pulseB"></div>
+              <button class="marker marker-a" id="markerA" aria-label="Point A">
+                <span>A</span>
+              </button>
+              <button class="marker marker-b" id="markerB" aria-label="Point B">
+                <span>B</span>
+              </button>
+            </div>
+          </div>
+          <div class="legend" aria-label="Map legend">
+            <span><i class="sample-grid"></i> mỗi ô = 100m</span>
+          </div>
+        </div>
+
+        <aside class="control-panel">
+          <div class="mode-tabs" role="tablist" aria-label="Training mode">
+            <button class="tab-btn active" id="tabPractice" type="button" role="tab" aria-selected="true">
+              Luyện đoán
+            </button>
+            <button class="tab-btn" id="tabMeasure" type="button" role="tab" aria-selected="false">
+              Kiểm tra khoảng cách
+            </button>
+          </div>
+
+          <section class="mode-panel active" id="practicePanel" role="tabpanel" aria-labelledby="tabPractice">
+            <div class="prompt">
+              <span class="label">Ước lượng</span>
+              <h2>Khoảng cách từ A đến B là bao nhiêu mét?</h2>
+            </div>
+
+            <form id="guessForm" class="guess-form" autocomplete="off">
+              <label for="guessInput">Nhập khoảng cách</label>
+              <div class="input-row">
+                <input
+                  id="guessInput"
+                  name="guess"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="700"
+                  step="1"
+                  placeholder="VD: 350"
+                  required
+                />
+                <span>m</span>
+              </div>
+              <button type="submit" class="primary-btn">Kiểm tra</button>
+            </form>
+
+            <div class="result-card" id="resultCard" aria-live="polite">
+              <p class="result-kicker">Sẵn sàng</p>
+              <strong>Hãy nhìn grid và đo bằng mắt.</strong>
+              <span>Điểm A/B sẽ đổi sau mỗi lượt luyện.</span>
+            </div>
+
+            <div class="meter-wrap" aria-label="Accuracy meter">
+              <div class="meter-copy">
+                <span>Độ chính xác</span>
+                <strong id="accuracyText">--</strong>
+              </div>
+              <div class="meter">
+                <div class="meter-fill" id="meterFill"></div>
+              </div>
+            </div>
+
+            <button type="button" id="nextBtn" class="secondary-btn">Lượt mới</button>
+          </section>
+
+          <section class="mode-panel" id="measurePanel" role="tabpanel" aria-labelledby="tabMeasure">
+            <div class="prompt">
+              <span class="label">Đo tự do</span>
+              <h2>Chọn điểm A rồi chọn điểm B trên map.</h2>
+            </div>
+
+            <div class="result-card measure-card" id="measureResult" aria-live="polite">
+              <p class="result-kicker">Đang chờ chọn điểm</p>
+              <strong>Click vào map để đặt A.</strong>
+              <span>Sau đó click lần nữa để đặt B và xem khoảng cách cụ thể.</span>
+            </div>
+
+            <div class="measure-readout">
+              <span>Khoảng cách</span>
+              <strong id="measureDistance">--</strong>
+            </div>
+
+            <button type="button" id="resetMeasureBtn" class="secondary-btn">Đặt lại A/B</button>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

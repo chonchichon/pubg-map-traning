@@ -24,6 +24,7 @@ const resetMeasureBtn = document.querySelector("#resetMeasureBtn");
 const MAP_METERS = 1000;
 const MAX_DISTANCE = 700;
 const MIN_DISTANCE = 100;
+const HIT_WINDOW = 10;
 
 let currentMode = "practice";
 let currentRound = null;
@@ -166,38 +167,47 @@ function setMode(mode) {
 }
 
 function evaluate(error) {
-  if (error <= 25) {
+  if (error <= 1) {
     return {
       className: "correct",
-      title: "Chuẩn như ping marker.",
-      kicker: "Đúng",
-      text: "Sai số cực thấp. Đây là mức nên giữ khi call khoảng cách trong combat.",
+      title: "Perfect shot.",
+      kicker: "Không lệch",
+      text: "Sai số gần như bằng 0m. Call khoảng cách kiểu này là quá sạch.",
     };
   }
 
-  if (error <= 50) {
+  if (error <= 3) {
     return {
-      className: "close",
-      title: "Rất gần.",
-      kicker: "Gần đúng",
-      text: "Sai số vẫn dùng tốt trong game. Thử nhìn thêm số ô chéo để ổn định hơn.",
+      className: "correct",
+      title: "Chết luôn.",
+      kicker: "1-3m",
+      text: "Sai số cực nhỏ. Mức này coi như bắn trúng tâm.",
     };
   }
 
-  if (error <= 100) {
+  if (error <= 5) {
     return {
       className: "close",
-      title: "Ổn, nhưng còn lệch.",
-      kicker: "Cần chỉnh",
-      text: "Bạn đang lệch khoảng một ô grid. Nhớ mỗi ô là 100m và đường chéo dài hơn cạnh.",
+      title: "Gần chết.",
+      kicker: "3-5m",
+      text: "Ước lượng rất sát. Chỉ cần chỉnh thêm một chút là vào vùng kết liễu.",
+    };
+  }
+
+  if (error <= HIT_WINDOW) {
+    return {
+      className: "close",
+      title: "Dính tí dmg.",
+      kicker: "5-10m",
+      text: "Bạn vẫn nằm trong vùng trúng, nhưng chưa đủ chính xác để kết thúc gọn.",
     };
   }
 
   return {
     className: "wrong",
-    title: "Lệch khá xa.",
+    title: "Sai.",
     kicker: "Sai",
-    text: "Hãy đếm ô ngang, ô dọc trước rồi mới ước lượng đường chéo giữa A và B.",
+    text: "Sai số quá 10m. Hãy đếm ô ngang, ô dọc trước rồi mới ước lượng đường chéo.",
   };
 }
 
@@ -252,9 +262,9 @@ guessForm.addEventListener("submit", (event) => {
   if (!Number.isFinite(guess)) return;
 
   const error = Math.abs(Math.round(guess) - currentRound.distance);
-  const accuracy = Math.max(0, Math.round(100 - (error / MAX_DISTANCE) * 100));
+  const accuracy = Math.max(0, Math.round(100 - (error / HIT_WINDOW) * 100));
   const result = evaluate(error);
-  const isCorrect = error <= 25;
+  const isCorrect = error <= HIT_WINDOW;
 
   answered = true;
   guessInput.disabled = true;

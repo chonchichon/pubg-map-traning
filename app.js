@@ -21,7 +21,7 @@ const measureResult = document.querySelector("#measureResult");
 const measureDistance = document.querySelector("#measureDistance");
 const resetMeasureBtn = document.querySelector("#resetMeasureBtn");
 
-const MAP_METERS = 1000;
+const MAP_METERS = 700;
 const MAX_DISTANCE = 700;
 const MIN_DISTANCE = 100;
 const HIT_WINDOW = 10;

@@ -13,6 +13,8 @@
   --bad: #f45b69;
   --blue: #63b3ed;
   --shadow: rgba(0, 0, 0, 0.32);
+  --cell-size: calc(100% / 7);
+  --marker-size: calc(var(--cell-size) / 25);
 }
 
 * {
@@ -139,7 +141,7 @@ h1 {
     linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px),
     linear-gradient(160deg, rgba(72, 89, 50, 0.92), rgba(49, 68, 45, 0.94) 52%, rgba(79, 84, 55, 0.96));
-  background-size: 10% 10%, 10% 10%, 100% 100%;
+  background-size: var(--cell-size) var(--cell-size), var(--cell-size) var(--cell-size), 100% 100%;
 }
 
 .terrain,
@@ -246,8 +248,8 @@ h1 {
 }
 
 .marker {
-  width: 1%;
-  height: 1%;
+  width: var(--marker-size);
+  height: var(--marker-size);
   border: 0;
   border-radius: 50%;
   translate: -50% -50%;
@@ -623,8 +625,8 @@ input {
   }
 
   .marker {
-    width: 1%;
-    height: 1%;
+    width: var(--marker-size);
+    height: var(--marker-size);
   }
 
   .mode-tabs {

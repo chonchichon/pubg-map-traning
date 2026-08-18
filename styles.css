@@ -13,8 +13,9 @@
   --bad: #f45b69;
   --blue: #63b3ed;
   --shadow: rgba(0, 0, 0, 0.32);
-  --cell-size: calc(100% / 7);
-  --marker-size: calc(var(--cell-size) / 25);
+  --cell-size: calc(100% / 10);
+  --marker-scale: 0.04;
+  --marker-size: calc(var(--cell-size) * var(--marker-scale));
 }
 
 * {
@@ -122,6 +123,7 @@ h1 {
 }
 
 .map-frame {
+  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   max-height: calc(100vh - 190px);
@@ -129,19 +131,22 @@ h1 {
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  background: #39462b;
+  background: transparent;
+  cursor: grab;
+  user-select: none;
 }
 
 .map-grid {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background:
     linear-gradient(var(--grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
-    linear-gradient(160deg, rgba(72, 89, 50, 0.92), rgba(49, 68, 45, 0.94) 52%, rgba(79, 84, 55, 0.96));
-  background-size: var(--cell-size) var(--cell-size), var(--cell-size) var(--cell-size), 100% 100%;
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: var(--cell-size) var(--cell-size);
+  transform-origin: 0 0;
+  will-change: transform;
+  cursor: grab;
 }
 
 .terrain,
@@ -154,6 +159,7 @@ h1 {
 }
 
 .terrain {
+  display: none;
   border-radius: 46% 54% 42% 58%;
   filter: blur(1px);
   opacity: 0.82;
@@ -183,6 +189,7 @@ h1 {
 }
 
 .road {
+  display: none;
   height: 3.4%;
   background: rgba(56, 50, 43, 0.68);
   border-top: 1px solid rgba(236, 219, 168, 0.22);
@@ -205,6 +212,7 @@ h1 {
 }
 
 .river {
+  display: none;
   left: 8%;
   top: 23%;
   width: 82%;
@@ -233,8 +241,8 @@ h1 {
 }
 
 .pulse-ring {
-  width: 18px;
-  height: 18px;
+  width: max(14px, calc(var(--marker-size) * 4));
+  height: max(14px, calc(var(--marker-size) * 4));
   border: 2px solid rgba(241, 200, 75, 0.8);
   border-radius: 50%;
   translate: -50% -50%;
@@ -250,6 +258,10 @@ h1 {
 .marker {
   width: var(--marker-size);
   height: var(--marker-size);
+  min-width: var(--marker-size);
+  min-height: var(--marker-size);
+  aspect-ratio: 1 / 1;
+  padding: 0;
   border: 0;
   border-radius: 50%;
   translate: -50% -50%;
@@ -357,6 +369,41 @@ h1 {
 
 .mode-panel.active {
   display: flex;
+}
+
+.marker-size-control {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(16, 19, 14, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.marker-size-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.marker-size-copy label,
+.marker-size-control span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.marker-size-copy strong {
+  color: var(--accent);
+  font-size: 0.88rem;
+}
+
+.marker-size-control input[type="range"] {
+  width: 100%;
+  padding: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
 }
 
 .prompt h2 {
@@ -525,6 +572,11 @@ input {
 
 .map-grid.measure-mode {
   cursor: crosshair;
+}
+
+.map-frame.is-panning,
+.map-frame.is-panning .map-grid {
+  cursor: grabbing;
 }
 
 @keyframes dropIn {

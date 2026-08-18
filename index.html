@@ -72,6 +72,23 @@
             </button>
           </div>
 
+          <div class="marker-size-control">
+            <div class="marker-size-copy">
+              <label for="markerSizeInput">Size chấm A/B</label>
+              <strong id="markerSizeValue">4% ô</strong>
+            </div>
+            <input
+              id="markerSizeInput"
+              type="range"
+              min="2"
+              max="20"
+              step="1"
+              value="4"
+              aria-describedby="markerSizeHint"
+            />
+            <span id="markerSizeHint">Mặc định 4% ô grid = 1/25 ô.</span>
+          </div>
+
           <section class="mode-panel active" id="practicePanel" role="tabpanel" aria-labelledby="tabPractice">
             <div class="prompt">
               <span class="label">Ước lượng</span>
@@ -87,7 +104,7 @@
                   type="number"
                   inputmode="numeric"
                   min="0"
-                  max="700"
+                  max="1000"
                   step="1"
                   placeholder="VD: 350"
                   required

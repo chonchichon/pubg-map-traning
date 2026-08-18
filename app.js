@@ -1,3 +1,4 @@
+const mapFrame = document.querySelector(".map-frame");
 const mapGrid = document.querySelector("#mapGrid");
 const markerA = document.querySelector("#markerA");
 const markerB = document.querySelector("#markerB");
@@ -20,11 +21,15 @@ const measurePanel = document.querySelector("#measurePanel");
 const measureResult = document.querySelector("#measureResult");
 const measureDistance = document.querySelector("#measureDistance");
 const resetMeasureBtn = document.querySelector("#resetMeasureBtn");
+const markerSizeInput = document.querySelector("#markerSizeInput");
+const markerSizeValue = document.querySelector("#markerSizeValue");
 
-const MAP_METERS = 700;
-const MAX_DISTANCE = 700;
+const MAP_METERS = 1000;
+const MAX_DISTANCE = 1000;
 const MIN_DISTANCE = 100;
 const HIT_WINDOW = 10;
+const MIN_ZOOM = 0.55;
+const MAX_ZOOM = 3;
 
 let currentMode = "practice";
 let currentRound = null;
@@ -33,6 +38,22 @@ let rounds = 0;
 let streak = 0;
 let totalError = 0;
 let answered = false;
+let mapView = {
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+};
+let mapDrag = {
+  active: false,
+  startX: 0,
+  startY: 0,
+  startPanX: 0,
+  startPanY: 0,
+};
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
 
 function randomPoint() {
   return {
@@ -42,11 +63,90 @@ function randomPoint() {
 }
 
 function pointFromClick(event) {
-  const rect = mapGrid.getBoundingClientRect();
+  const rect = mapFrame.getBoundingClientRect();
+  const localX = (event.clientX - rect.left - mapView.panX) / mapView.zoom;
+  const localY = (event.clientY - rect.top - mapView.panY) / mapView.zoom;
   return {
-    x: Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100)),
-    y: Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100)),
+    x: clamp((localX / mapGrid.offsetWidth) * 100, 0, 100),
+    y: clamp((localY / mapGrid.offsetHeight) * 100, 0, 100),
   };
+}
+
+function clampMapPan() {
+  const frameWidth = mapFrame.clientWidth;
+  const frameHeight = mapFrame.clientHeight;
+  const scaledWidth = mapGrid.offsetWidth * mapView.zoom;
+  const scaledHeight = mapGrid.offsetHeight * mapView.zoom;
+
+  if (scaledWidth <= frameWidth) {
+    mapView.panX = (frameWidth - scaledWidth) / 2;
+  } else {
+    mapView.panX = clamp(mapView.panX, frameWidth - scaledWidth, 0);
+  }
+
+  if (scaledHeight <= frameHeight) {
+    mapView.panY = (frameHeight - scaledHeight) / 2;
+  } else {
+    mapView.panY = clamp(mapView.panY, frameHeight - scaledHeight, 0);
+  }
+}
+
+function updateMapTransform() {
+  clampMapPan();
+  mapGrid.style.transform = `translate(${mapView.panX}px, ${mapView.panY}px) scale(${mapView.zoom})`;
+}
+
+function updateMarkerSize() {
+  const sizePercent = Number(markerSizeInput.value);
+  document.documentElement.style.setProperty("--marker-scale", String(sizePercent / 100));
+  markerSizeValue.textContent = `${sizePercent}% ô`;
+}
+
+function handleMapWheel(event) {
+  event.preventDefault();
+  const rect = mapFrame.getBoundingClientRect();
+  const pointerX = event.clientX - rect.left;
+  const pointerY = event.clientY - rect.top;
+  const previousZoom = mapView.zoom;
+  const nextZoom = clamp(previousZoom * Math.exp(-event.deltaY * 0.001), MIN_ZOOM, MAX_ZOOM);
+
+  if (nextZoom === previousZoom) return;
+
+  const mapX = (pointerX - mapView.panX) / previousZoom;
+  const mapY = (pointerY - mapView.panY) / previousZoom;
+  mapView.zoom = nextZoom;
+  mapView.panX = pointerX - mapX * nextZoom;
+  mapView.panY = pointerY - mapY * nextZoom;
+  updateMapTransform();
+}
+
+function startMapDrag(event) {
+  if (event.button !== 2) return;
+
+  event.preventDefault();
+  mapDrag = {
+    active: true,
+    startX: event.clientX,
+    startY: event.clientY,
+    startPanX: mapView.panX,
+    startPanY: mapView.panY,
+  };
+  mapFrame.classList.add("is-panning");
+}
+
+function dragMap(event) {
+  if (!mapDrag.active) return;
+
+  mapView.panX = mapDrag.startPanX + event.clientX - mapDrag.startX;
+  mapView.panY = mapDrag.startPanY + event.clientY - mapDrag.startY;
+  updateMapTransform();
+}
+
+function stopMapDrag() {
+  if (!mapDrag.active) return;
+
+  mapDrag.active = false;
+  mapFrame.classList.remove("is-panning");
 }
 
 function distanceMeters(a, b) {
@@ -98,11 +198,10 @@ function hideLine() {
 }
 
 function revealLine(a, b) {
-  const rect = mapGrid.getBoundingClientRect();
-  const ax = (a.x / 100) * rect.width;
-  const ay = (a.y / 100) * rect.height;
-  const bx = (b.x / 100) * rect.width;
-  const by = (b.y / 100) * rect.height;
+  const ax = (a.x / 100) * mapGrid.offsetWidth;
+  const ay = (a.y / 100) * mapGrid.offsetHeight;
+  const bx = (b.x / 100) * mapGrid.offsetWidth;
+  const by = (b.y / 100) * mapGrid.offsetHeight;
   const dx = bx - ax;
   const dy = by - ay;
   const pixelLength = Math.hypot(dx, dy);
@@ -283,14 +382,23 @@ guessForm.addEventListener("submit", (event) => {
 
 tabPractice.addEventListener("click", () => setMode("practice"));
 tabMeasure.addEventListener("click", () => setMode("measure"));
+markerSizeInput.addEventListener("input", updateMarkerSize);
+mapFrame.addEventListener("wheel", handleMapWheel, { passive: false });
+mapFrame.addEventListener("mousedown", startMapDrag);
+mapFrame.addEventListener("contextmenu", (event) => event.preventDefault());
 mapGrid.addEventListener("click", handleMeasureClick);
 nextBtn.addEventListener("click", renderRound);
 resetMeasureBtn.addEventListener("click", resetMeasure);
+window.addEventListener("mousemove", dragMap);
+window.addEventListener("mouseup", stopMapDrag);
 window.addEventListener("resize", () => {
+  updateMapTransform();
   if (currentMode === "practice" && answered) revealLine(currentRound.a, currentRound.b);
   if (currentMode === "measure" && measurePoints.a && measurePoints.b) {
     revealLine(measurePoints.a, measurePoints.b);
   }
 });
 
+updateMapTransform();
+updateMarkerSize();
 setMode("practice");
